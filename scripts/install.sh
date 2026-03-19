@@ -51,12 +51,27 @@ install_compose() {
 }
 
 setup_env() {
-    if [[ ! -f "$PROJECT_DIR/.env" ]]; then
-        cp "$PROJECT_DIR/.env.example" "$PROJECT_DIR/.env"
-        log "Created .env from .env.example — edit it before starting if needed."
-    else
-        log ".env already exists, skipping."
+    log "Project directory: $PROJECT_DIR"
+    if [[ ! -d "$PROJECT_DIR" ]]; then
+        die "Project directory not found: $PROJECT_DIR — run this script from inside the cloned repo."
     fi
+    if [[ -f "$PROJECT_DIR/.env" ]]; then
+        log ".env already exists, skipping."
+        return
+    fi
+    if [[ -f "$PROJECT_DIR/.env.example" ]]; then
+        cp "$PROJECT_DIR/.env.example" "$PROJECT_DIR/.env"
+    else
+        # Write defaults inline if .env.example wasn't shipped
+        cat > "$PROJECT_DIR/.env" <<'EOF'
+TIKG_MODEL=secureBERT
+LOG_LEVEL=INFO
+NETDATA_CLAIM_TOKEN=
+NETDATA_CLAIM_URL=https://app.netdata.cloud
+NETDATA_CLAIM_ROOMS=
+EOF
+    fi
+    log "Created .env — edit $PROJECT_DIR/.env before starting if needed."
 }
 
 open_firewall() {
